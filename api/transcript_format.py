@@ -1,21 +1,29 @@
+import json
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.formatters import JSONFormatter
-from flask import Flask, request
 
-app = Flask(__name__)
-
-@app.route('/api/transcript_format', methods=['GET'])
-def get_transcript():
-    video_id = request.args.get('id')
-    formatter = JSONFormatter()
-    ytt_api = YouTubeTranscriptApi()
-
-    if not video_id:
-        return jsonify({"error_no_id": "missing 'id' parameter"}), 400
-
+def get_transcript(request):
     try:
-	      transcript = ytt_api.fetch(video_id)
-	      json_formatted = formatter.format_transcript(transcript)
-	      return json_formatted
+        video_id = request.get("query", {}).get("id")
+
+        if not video_id:
+            return {
+            "statusCode": 400,
+            "headers": {"content-type": "application/json"},
+            "body": json.dumps({"error": "missing id parameter"})
+            }
+    
+        transcript = YouTubeTranscriptApi().fetch(video_id)
+        json_formatted = JSONFormatter().format_transcript(transcript)
+        return {
+            "statusCode": 200,
+            "headers": {"content-type": "application/json"},
+            "body": json_formatted
+        }
+    
     except Exception as e:
-        return jsonify({"transcript_error": str(e)}), 500
+        return {
+            "statusCode": 500,
+            "headers": {"content-type": "application/json"},
+            "body": json.dumps({"transcript_error": str(e)})
+        }
