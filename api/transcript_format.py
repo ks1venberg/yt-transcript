@@ -2,7 +2,7 @@ import json
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.formatters import JSONFormatter
 
-def get_transcript(request):
+def handler(request):
     try:
         video_id = request.get("query", {}).get("id")
 
