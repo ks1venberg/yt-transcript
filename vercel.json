@@ -1,6 +1,0 @@
-{
-  "routes": [
-    { "src": "/", "dest": "/api/index.py" },
-    { "src": "/api/transcript_format", "dest": "/api/transcript_format.py" }
-  ]
-}
