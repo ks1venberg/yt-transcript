@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.responses import JSONResponse
 from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound
 from youtube_transcript_api.formatters import TextFormatter
 
@@ -18,19 +19,20 @@ def fetch_english_transcript(video_id: str):
       3) if no subs – error
     """
 
-    transcripts = YouTubeTranscriptApi.list_transcripts(video_id)
+    ytt_api = YouTubeTranscriptApi()
+    transcript_list = ytt_api.list(video_id)
 
     # 1)  manual subtitles EN
     try:
-        transcript = transcripts.find_manually_created_transcript(["en"]).fetch()
-        return transcript
+        transcript = transcript_list.find_transcript(["en"])
+        return transcript.fetch()
     except:
         pass
 
     # 2) auto-gen subtitles EN
     try:
-        transcript = transcripts.find_generated_transcript(["en"]).fetch()
-        return transcript
+        transcript = transcript_list.find_generated_transcript(["en"])
+        return transcript.fetch()
     except:
         pass
 
@@ -40,9 +42,9 @@ def fetch_english_transcript(video_id: str):
 @app.get("/transcript")
 def transcript(id: str = Query(..., description="YouTube video ID")):
     try:
-        transcript = fetch_english_transcript(id)
-        formatted = format_transcript(transcript)
-        return {"text": formatted}
+        fetched = fetch_english_transcript(id)
+        formatted = format_transcript(fetched)
+        return JSONResponse(content={"text": formatted})
 
     except TranscriptsDisabled:
         raise HTTPException(status_code=400, detail="Transcripts disabled for this video")
