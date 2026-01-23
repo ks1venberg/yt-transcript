@@ -58,7 +58,7 @@ def transcript(id: str = Query(..., description="YouTube video ID")):
 @app.get("/")
 def root():
     return {
-        "service": "yt-transcript API (Railway-Hetzner)",
+        "service": "yt-transcript API (Hetzner V2)",
         "endpoints": {
             "/transcript?id=VIDEO_ID": "Get formatted English transcript",
         },
