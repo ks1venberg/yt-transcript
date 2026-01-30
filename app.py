@@ -35,9 +35,22 @@ def fetch_english_transcript(video_id: str):
         return transcript.fetch()
     except:
         pass
+    # 3) Manual RU -> translate to EN
+    try:
+        transcript = transcript_list.find_transcript(["ru"])
+        return transcript.translate("en").fetch()
+    except:
+        pass
 
-    # 3) if no subs – error
-    raise NoTranscriptFound("No English transcript available")
+    # 4) Auto-generated RU -> translate to EN
+    try:
+        transcript = transcript_list.find_generated_transcript(["ru"])
+        return transcript.translate("en").fetch()
+    except:
+        pass
+
+    # 5) if no subs – error
+    raise NoTranscriptFound("English and Russian transcripts are not available")
 
 @app.get("/transcript")
 def transcript(id: str = Query(..., description="YouTube video ID")):
