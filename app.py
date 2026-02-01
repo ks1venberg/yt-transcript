@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import JSONResponse
-from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled, NoTranscriptFound
+from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled
 from youtube_transcript_api.formatters import TextFormatter
 import logging
 
@@ -43,7 +43,7 @@ def fetch_english_transcript(video_id: str):
             video_id,
         )
 
-    except NoTranscriptFound:
+    except Exception:
         logging.warning(
             "NoTranscriptFound for EN, video_id=%s",
             video_id,
@@ -54,7 +54,7 @@ def fetch_english_transcript(video_id: str):
         transcript = transcript_list.find_generated_transcript(["en"])
         return transcript.fetch()
     
-    except NoTranscriptFound:
+    except Exception:
         logging.warning(
             "No auto-generated EN transcript, video_id=%s",
             video_id,
@@ -88,7 +88,7 @@ def fetch_english_transcript(video_id: str):
         "No English or Russian transcripts available, video_id=%s",
         video_id,
     )
-    raise NoTranscriptFound("English and Russian transcripts are not available")
+    raise RuntimeError("English and Russian transcripts are not available")
 
 @app.get("/transcript")
 def transcript(id: str = Query(..., description="YouTube video ID")):
@@ -98,9 +98,9 @@ def transcript(id: str = Query(..., description="YouTube video ID")):
     try:
         fetched = fetch_english_transcript(id)
     
-    except NoTranscriptFound as exc:
+    except Exception:
         logging.warning(
-            "NoTranscriptFound for video_id=%s",
+            "No transcript found for video_id=%s",
             id,
         )
 
