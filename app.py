@@ -26,8 +26,6 @@ def fetch_english_transcript(video_id: str):
       3) if no subs – error
     """
 
-    logging.info("fetch_english_transcript, video_id=%s", video_id)
-
     ytt_api = YouTubeTranscriptApi()
     transcript_list = ytt_api.list(video_id)
 
@@ -60,31 +58,56 @@ def fetch_english_transcript(video_id: str):
             video_id,
         )
 
-    # 3) Manual RU -> translate to EN
+    # 3) Manual RU
     try:
-        logging.info("Trying manual translate ru-en")
+        logging.info("Try to find manual ru translate")
         transcript = transcript_list.find_transcript(["ru"])
-        return transcript.translate("en").fetch()
-    
+        #translated = transcript.translate("en").fetch()
+        if transcript:
+            logging.info(
+                "Manual ru translate is found, video_id=%s",
+                video_id,
+            )
+            return transcript.fetch()
+        else: 
+            logging.info(
+                "Manual ru translate returned empty, video_id=%s",
+                video_id,
+            )
+            return None
+        
     except Exception:
         logging.warning(
-            "Manual translate ru-en failed for video_id=%s",
-            video_id)
+        "Error with manual ru translate, video_id=%s",
+        video_id,
+        )
 
-    # 4) Auto-generated RU -> translate to EN
+    # 4) Auto-generated RU
     try:
-        logging.info("Trying to translate auto-generated ru")
+        logging.info("Try to find auto-generated ru")
         transcript = transcript_list.find_generated_transcript(["ru"])
-        return transcript.translate("en").fetch()
+        #translated = transcript.translate("en").fetch()
+        if transcript:
+            logging.info(
+                "Auto-generated ru translate is found, video_id=%s",
+                video_id,
+            )
+            return transcript.fetch()
+        else: 
+            logging.info(
+                "Auto-generated ru translate returned empty, video_id=%s",
+                video_id,
+            )
+            return None
     
     except Exception:
         logging.warning(
-            "Auto-generated ru translate to en failed, video_id=%s",
-            video_id,
+        "Error with auto-generated ru translate, video_id=%s",
+        video_id,
         )
 
     # 5) if no subs – error
-    logging.error(
+    logging.warning(
         "No English or Russian transcripts available, video_id=%s",
         video_id,
     )
@@ -116,6 +139,6 @@ def root():
     return {
         "service": "yt-transcript API (Hetzner V2)",
         "endpoints": {
-            "/transcript?id=VIDEO_ID": "Get formatted English transcript",
+            "/transcript?id=VIDEO_ID": "Get formatted transcript",
         },
     }
